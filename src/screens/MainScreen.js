@@ -15,6 +15,9 @@ import { images } from '../data/images';
 
 const API_KEY = 'YOUR_TMDB_API_KEY'; // Replace with your actual API key
 
+const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
+
 const MainScreen = ({ navigation }) => {
   const [newestMovies, setNewestMovies] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -113,8 +116,12 @@ const MainScreen = ({ navigation }) => {
         horizontal
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderNewestMovie}
-        style={styles.newestMoviesList}
         showsHorizontalScrollIndicator={false}
+        pagingEnabled
+        snapToAlignment="center"
+        decelerationRate="fast"
+        snapToInterval={screenWidth}
+        contentContainerStyle={{ alignItems: 'center' }}
       />
 
       {/* Category Filter */}
@@ -143,12 +150,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   newestMoviesList: {
-    height: Dimensions.get('window').height * 0.4,
+    width: screenWidth,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   newestMovieImage: {
-    width: Dimensions.get('window').width * 0.8,
-    height: '100%',
-    marginHorizontal: 10,
+    margin: 5,
+    width: screenWidth - 10,
+    height: screenHeight * 0.35,
     borderRadius: 10,
   },
   categoriesScroll: {
