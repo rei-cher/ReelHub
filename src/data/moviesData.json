@@ -3,31 +3,31 @@
       {
         "id": 1,
         "title": "Movie One",
-        "poster_path": "https://placekitten.com/800/1200",
+        "poster_path": "poster",
         "genre_ids": [28, 12]
       },
       {
         "id": 2,
         "title": "Movie Two",
-        "poster_path": "https://placekitten.com/800/1200",
+        "poster_path": "poster",
         "genre_ids": [16, 35]
       },
       {
         "id": 3,
         "title": "Movie Three",
-        "poster_path": "https://placekitten.com/800/1200",
+        "poster_path": "poster",
         "genre_ids": [18, 10749]
       },
       {
         "id": 4,
         "title": "Movie Four",
-        "poster_path": "https://placekitten.com/800/1200",
+        "poster_path": "poster",
         "genre_ids": [27, 53]
       },
       {
         "id": 5,
         "title": "Movie Five",
-        "poster_path": "https://placekitten.com/800/1200",
+        "poster_path": "poster",
         "genre_ids": [878, 28]
       }
     ],
@@ -58,60 +58,60 @@
         {
           "id": 101,
           "title": "Action Movie One",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         },
         {
           "id": 102,
           "title": "Action Movie Two",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         }
       ],
       "12": [
         {
           "id": 201,
           "title": "Adventure Movie One",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         },
         {
           "id": 202,
           "title": "Adventure Movie Two",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         }
       ],
       "16": [
         {
           "id": 301,
           "title": "Animation Movie One",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         },
         {
           "id": 302,
           "title": "Animation Movie Two",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         }
       ],
       "35": [
         {
           "id": 401,
           "title": "Comedy Movie One",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         },
         {
           "id": 402,
           "title": "Comedy Movie Two",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         }
       ],
       "18": [
         {
           "id": 501,
           "title": "Drama Movie One",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         },
         {
           "id": 502,
           "title": "Drama Movie Two",
-          "poster_path": "https://placekitten.com/800/1200"
+          "poster_path": "poster"
         }
       ]
     }

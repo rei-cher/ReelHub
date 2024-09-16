@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import moviesData from '../data/moviesData.json';
+import { images } from '../data/images';
 
 const API_KEY = 'YOUR_TMDB_API_KEY'; // Replace with your actual API key
 
@@ -68,7 +69,8 @@ const MainScreen = ({ navigation }) => {
 
   const renderNewestMovie = ({ item }) => (
     <Image
-      source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
+    //   source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
+      source={images[item.poster_path]}
       style={styles.newestMovieImage}
     />
   );
@@ -93,7 +95,8 @@ const MainScreen = ({ navigation }) => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <Image
-              source={{ uri: `https://image.tmdb.org/t/p/w200${item.poster_path}` }}
+            //   source={{ uri: `https://image.tmdb.org/t/p/w200${item.poster_path}` }}
+              source={{ uri: item.poster_path }}
               style={styles.categoryMovieImage}
             />
           )}
