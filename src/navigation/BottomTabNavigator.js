@@ -8,6 +8,8 @@ import ProgressScreen from '../screens/ProgressScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+import colors from "../styles/theme";
+
 const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => (
@@ -43,6 +45,12 @@ const BottomTabNavigator = () => (
         return <Icon name={iconName} size={size} color={color} />;
       },
       headerShown: false,
+      tabBarStyle: {
+        backgroundColor: colors.cardBackground,
+        borderTopColor: colors.cardBackground,
+      },
+      tabBarActiveTintColor: colors.accent,
+      tabBarInactiveTintColor: colors.secondaryText
     })}
   >
     <Tab.Screen name="Home" component={HomeStackNavigator} />

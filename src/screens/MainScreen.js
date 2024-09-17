@@ -10,13 +10,11 @@ import {
   Dimensions,
 } from 'react-native';
 import axios from 'axios';
-import moviesData from '../data/moviesData.json';
-import { images } from '../data/images';
-
-const API_KEY = 'YOUR_TMDB_API_KEY'; // Replace with your actual API key
+import { TMDB_API } from '@env';
+import colors from '../styles/theme';
+import GlobalStyles from '../styles/GlobalStyles';
 
 const screenWidth = Dimensions.get('window').width;
-const screenHeight = Dimensions.get('window').height;
 
 const MainScreen = ({ navigation }) => {
   const [newestMovies, setNewestMovies] = useState([]);
@@ -24,17 +22,14 @@ const MainScreen = ({ navigation }) => {
   const [categoryMovies, setCategoryMovies] = useState({});
 
   useEffect(() => {
-    // fetchNewestMovies();
-    // fetchCategories();
-    setNewestMovies(moviesData.newestMovies);
-    setCategories(moviesData.categories);
-    setCategoryMovies(moviesData.categoryMovies);
+    fetchNewestMovies();
+    fetchCategories();
   }, []);
 
   const fetchNewestMovies = async () => {
     try {
       const response = await axios.get(
-        `https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}`
+        `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API}&language=en-US&page=1`
       );
       setNewestMovies(response.data.results.slice(0, 5));
     } catch (error) {
@@ -45,7 +40,7 @@ const MainScreen = ({ navigation }) => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(
-        `https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}`
+        `https://api.themoviedb.org/3/genre/movie/list?api_key=${TMDB_API}&language=en-US&page=1`
       );
       setCategories(response.data.genres);
       response.data.genres.forEach((genre) => {
@@ -59,7 +54,7 @@ const MainScreen = ({ navigation }) => {
   const fetchMoviesByCategory = async (genreId) => {
     try {
       const response = await axios.get(
-        `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${genreId}`
+        `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API}&with_genres=${genreId}&language=en-US&page=1`
       );
       setCategoryMovies((prevState) => ({
         ...prevState,
@@ -70,26 +65,34 @@ const MainScreen = ({ navigation }) => {
     }
   };
 
-  const renderNewestMovie = ({ item }) => (
-    <Image
-    //   source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
-      source={images[item.poster_path]}
-      style={styles.newestMovieImage}
-    />
-  );
+  const renderNewestMovie = ({ item }) => {
+    const posterUrl = item.poster_path
+      ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+      : 'https://via.placeholder.com/500x750?text=No+Image';
+
+    return (
+      <View style={styles.newestMovieContainer}>
+        <Image
+          source={{ uri: posterUrl }}
+          style={styles.newestMovieImage}
+          resizeMode="cover"
+        />
+      </View>
+    );
+  };
 
   const renderCategorySection = (genre) => {
     const movies = categoryMovies[genre.id] || [];
     return (
       <View key={genre.id} style={styles.categorySection}>
         <View style={styles.categoryHeader}>
-          <Text style={styles.categoryName}>{genre.name}</Text>
+          <Text style={[styles.categoryName, GlobalStyles.primaryText]}>{genre.name}</Text>
           <TouchableOpacity
             onPress={() =>
               navigation.navigate('Category', { categoryId: genre.id, categoryName: genre.name })
             }
           >
-            <Text style={styles.seeAllText}>See All</Text>
+            <Text style={[styles.seeAllText, GlobalStyles.secondaryText]}>See All</Text>
           </TouchableOpacity>
         </View>
         <FlatList
@@ -98,8 +101,7 @@ const MainScreen = ({ navigation }) => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <Image
-            //   source={{ uri: `https://image.tmdb.org/t/p/w200${item.poster_path}` }}
-              source={{ uri: item.poster_path }}
+              source={{ uri: `https://image.tmdb.org/t/p/w200${item.poster_path}` }}
               style={styles.categoryMovieImage}
             />
           )}
@@ -109,7 +111,7 @@ const MainScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={GlobalStyles.container}>
       {/* Newest Movies Section */}
       <FlatList
         data={newestMovies}
@@ -129,12 +131,12 @@ const MainScreen = ({ navigation }) => {
         {categories.map((item) => (
           <TouchableOpacity
             key={item.id}
-            style={styles.categoryButton}
+            style={GlobalStyles.button}
             onPress={() =>
               navigation.navigate('Category', { categoryId: item.id, categoryName: item.name })
             }
           >
-            <Text style={styles.categoryText}>{item.name}</Text>
+            <Text style={GlobalStyles.buttonText}>{item.name}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -146,33 +148,20 @@ const MainScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  newestMoviesList: {
+  newestMovieContainer: {
     width: screenWidth,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 10,
   },
   newestMovieImage: {
-    margin: 5,
-    width: screenWidth - 10,
-    height: screenHeight * 0.35,
+    width: screenWidth * 0.9,
+    aspectRatio: 2 / 3,
     borderRadius: 10,
   },
   categoriesScroll: {
     marginVertical: 10,
     paddingHorizontal: 10,
-  },
-  categoryButton: {
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    backgroundColor: '#ddd',
-    marginHorizontal: 5,
-    borderRadius: 20,
-  },
-  categoryText: {
-    fontSize: 16,
   },
   categorySection: {
     marginVertical: 10,
@@ -189,7 +178,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   seeAllText: {
-    color: 'blue',
+    color: colors.accent,
   },
   categoryMovieImage: {
     width: 120,
