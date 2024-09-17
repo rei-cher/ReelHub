@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  ActivityIndicator,
+  Animated,
 } from 'react-native';
 import axios from 'axios';
 import { TMDB_API } from '@env';
@@ -17,14 +19,25 @@ import GlobalStyles from '../styles/GlobalStyles';
 const screenWidth = Dimensions.get('window').width;
 
 const MainScreen = ({ navigation }) => {
+  const flatListRef = useRef(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const isInteracting = useRef(false);
+  const autoScrollTimer = useRef(null);
+
   const [newestMovies, setNewestMovies] = useState([]);
   const [categories, setCategories] = useState([]);
   const [categoryMovies, setCategoryMovies] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    fetchNewestMovies();
-    fetchCategories();
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    await Promise.all([fetchNewestMovies(), fetchCategories()]);
+    setLoading(false);
+  };
 
   const fetchNewestMovies = async () => {
     try {
@@ -65,6 +78,66 @@ const MainScreen = ({ navigation }) => {
     }
   };
 
+  const startAutoScroll = () => {
+    if (isInteracting.current) return;
+
+    autoScrollTimer.current = setTimeout(() => {
+      let nextIndex = currentIndex + 1;
+      if (nextIndex >= newestMovies.length) {
+        nextIndex = 0; // Loop back to the first movie
+      }
+      scrollToIndex(nextIndex);
+      setCurrentIndex(nextIndex);
+      startAutoScroll();
+    }, 5000);
+  };
+
+  const scrollToIndex = (index) => {
+    if (flatListRef.current) {
+      Animated.timing(scrollX, {
+        toValue: index * screenWidth,
+        duration: 500, // Duration of the scroll animation
+        useNativeDriver: false,
+      }).start();
+    }
+  };
+
+  useEffect(() => {
+    const listenerId = scrollX.addListener(({ value }) => {
+      if (flatListRef.current) {
+        flatListRef.current.scrollToOffset({ offset: value, animated: false });
+      }
+    });
+    return () => {
+      scrollX.removeListener(listenerId);
+    };
+  }, [flatListRef]);
+
+  useEffect(() => {
+    if (newestMovies.length > 0) {
+      startAutoScroll();
+    }
+    return () => {
+      clearTimeout(autoScrollTimer.current);
+    };
+  }, [newestMovies, currentIndex]);
+
+  const handleTouchStart = () => {
+    isInteracting.current = true;
+    clearTimeout(autoScrollTimer.current);
+  };
+
+  const handleTouchEnd = () => {
+    isInteracting.current = false;
+    startAutoScroll();
+  };
+
+  const handleMomentumScrollEnd = (event) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const index = Math.round(offsetX / screenWidth);
+    setCurrentIndex(index);
+  };
+
   const renderNewestMovie = ({ item }) => {
     const posterUrl = item.poster_path
       ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
@@ -86,13 +159,20 @@ const MainScreen = ({ navigation }) => {
     return (
       <View key={genre.id} style={styles.categorySection}>
         <View style={styles.categoryHeader}>
-          <Text style={[styles.categoryName, GlobalStyles.primaryText]}>{genre.name}</Text>
+          <Text style={[styles.categoryName, GlobalStyles.primaryText]}>
+            {genre.name}
+          </Text>
           <TouchableOpacity
             onPress={() =>
-              navigation.navigate('Category', { categoryId: genre.id, categoryName: genre.name })
+              navigation.navigate('Category', {
+                categoryId: genre.id,
+                categoryName: genre.name,
+              })
             }
           >
-            <Text style={[styles.seeAllText, GlobalStyles.secondaryText]}>See All</Text>
+            <Text style={[styles.seeAllText, GlobalStyles.secondaryText]}>
+              See All
+            </Text>
           </TouchableOpacity>
         </View>
         <FlatList
@@ -101,19 +181,31 @@ const MainScreen = ({ navigation }) => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <Image
-              source={{ uri: `https://image.tmdb.org/t/p/w200${item.poster_path}` }}
+              source={{
+                uri: `https://image.tmdb.org/t/p/w200${item.poster_path}`,
+              }}
               style={styles.categoryMovieImage}
             />
           )}
+          showsHorizontalScrollIndicator={false}
         />
       </View>
     );
   };
 
+  if (loading) {
+    return (
+      <View style={GlobalStyles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={GlobalStyles.container}>
       {/* Newest Movies Section */}
       <FlatList
+        ref={flatListRef}
         data={newestMovies}
         horizontal
         keyExtractor={(item) => item.id.toString()}
@@ -124,16 +216,27 @@ const MainScreen = ({ navigation }) => {
         decelerationRate="fast"
         snapToInterval={screenWidth}
         contentContainerStyle={{ alignItems: 'center' }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        scrollEventThrottle={16}
       />
 
       {/* Category Filter */}
-      <ScrollView horizontal style={styles.categoriesScroll} showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        style={styles.categoriesScroll}
+        showsHorizontalScrollIndicator={false}
+      >
         {categories.map((item) => (
           <TouchableOpacity
             key={item.id}
             style={GlobalStyles.button}
             onPress={() =>
-              navigation.navigate('Category', { categoryId: item.id, categoryName: item.name })
+              navigation.navigate('Category', {
+                categoryId: item.id,
+                categoryName: item.name,
+              })
             }
           >
             <Text style={GlobalStyles.buttonText}>{item.name}</Text>
