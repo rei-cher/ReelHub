@@ -1,3 +1,5 @@
+// src/screens/MainScreen.js
+
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -23,6 +25,8 @@ const MainScreen = ({ navigation }) => {
   const scrollX = useRef(new Animated.Value(0)).current;
   const isInteracting = useRef(false);
   const autoScrollTimer = useRef(null);
+  const scrollViewRef = useRef(null);
+  const categoryRefs = useRef({});
 
   const [newestMovies, setNewestMovies] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -53,7 +57,7 @@ const MainScreen = ({ navigation }) => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(
-        `https://api.themoviedb.org/3/genre/movie/list?api_key=${TMDB_API}&language=en-US&page=1`
+        `https://api.themoviedb.org/3/genre/movie/list?api_key=${TMDB_API}&language=en-US`
       );
       setCategories(response.data.genres);
       response.data.genres.forEach((genre) => {
@@ -84,7 +88,7 @@ const MainScreen = ({ navigation }) => {
     autoScrollTimer.current = setTimeout(() => {
       let nextIndex = currentIndex + 1;
       if (nextIndex >= newestMovies.length) {
-        nextIndex = 0; // Loop back to the first movie
+        nextIndex = 0;
       }
       scrollToIndex(nextIndex);
       setCurrentIndex(nextIndex);
@@ -96,7 +100,7 @@ const MainScreen = ({ navigation }) => {
     if (flatListRef.current) {
       Animated.timing(scrollX, {
         toValue: index * screenWidth,
-        duration: 500, // Duration of the scroll animation
+        duration: 500,
         useNativeDriver: false,
       }).start();
     }
@@ -138,6 +142,18 @@ const MainScreen = ({ navigation }) => {
     setCurrentIndex(index);
   };
 
+  const scrollToCategory = (categoryId) => {
+    const categoryRef = categoryRefs.current[categoryId];
+    if (categoryRef && scrollViewRef.current) {
+      categoryRef.measureLayout(
+        scrollViewRef.current.getInnerViewNode(),
+        (x, y) => {
+          scrollViewRef.current.scrollTo({ y, animated: true });
+        }
+      );
+    }
+  };
+
   const renderNewestMovie = ({ item }) => {
     const posterUrl = item.poster_path
       ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
@@ -156,8 +172,19 @@ const MainScreen = ({ navigation }) => {
 
   const renderCategorySection = (genre) => {
     const movies = categoryMovies[genre.id] || [];
+    if (movies.length === 0) {
+      return null;
+    }
     return (
-      <View key={genre.id} style={styles.categorySection}>
+      <View
+        key={genre.id}
+        ref={(ref) => {
+          if (ref) {
+            categoryRefs.current[genre.id] = ref;
+          }
+        }}
+        style={styles.categorySection}
+      >
         <View style={styles.categoryHeader}>
           <Text style={[styles.categoryName, GlobalStyles.primaryText]}>
             {genre.name}
@@ -202,7 +229,7 @@ const MainScreen = ({ navigation }) => {
   }
 
   return (
-    <ScrollView style={GlobalStyles.container}>
+    <ScrollView ref={scrollViewRef} style={GlobalStyles.container}>
       {/* Newest Movies Section */}
       <FlatList
         ref={flatListRef}
@@ -232,12 +259,7 @@ const MainScreen = ({ navigation }) => {
           <TouchableOpacity
             key={item.id}
             style={GlobalStyles.button}
-            onPress={() =>
-              navigation.navigate('Category', {
-                categoryId: item.id,
-                categoryName: item.name,
-              })
-            }
+            onPress={() => scrollToCategory(item.id)}
           >
             <Text style={GlobalStyles.buttonText}>{item.name}</Text>
           </TouchableOpacity>
