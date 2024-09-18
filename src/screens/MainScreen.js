@@ -299,8 +299,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   categoryName: {
-    fontSize: 18,
+    fontSize: 20,
+    marginBottom: 5,
     fontWeight: 'bold',
+    textDecorationLine: 'underline'
   },
   seeAllText: {
     color: colors.accent,
