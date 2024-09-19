@@ -1,5 +1,3 @@
-// src/screens/MainScreen.js
-
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -46,7 +44,7 @@ const MainScreen = ({ navigation }) => {
   const fetchNewestMovies = async () => {
     try {
       const response = await axios.get(
-        `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API}&language=en-US&page=1`
+        `https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_API}&language=en-US`
       );
       setNewestMovies(response.data.results.slice(0, 5));
     } catch (error) {
@@ -299,8 +297,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   categoryName: {
-    fontSize: 18,
+    fontSize: 20,
+    marginBottom: 5,
     fontWeight: 'bold',
+    textDecorationLine: 'underline'
   },
   seeAllText: {
     color: colors.accent,
